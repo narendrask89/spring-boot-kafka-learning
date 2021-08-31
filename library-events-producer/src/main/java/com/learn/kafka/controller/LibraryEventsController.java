@@ -1,5 +1,7 @@
 package com.learn.kafka.controller;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,30 +22,31 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 public class LibraryEventsController {
-	
+
 	@Autowired
 	LibraryEventProducer libraryEventProducer;
 
 	@PostMapping("/v1/libraryevent")
-	public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent) throws Exception {
+	public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent)
+			throws Exception {
 
-		log.info("before sendLibraryEvent");
 		libraryEvent.setLibraryEventType(LibraryEventType.NEW);
-		//libraryEventProducer.sendLibraryEvent(libraryEvent);
-		//SendResult<Integer, String> sendResult = libraryEventProducer.sendLibraryEventSynchronous(libraryEvent);
-		//log.info("send result is {}", sendResult.toString());
+		// libraryEventProducer.sendLibraryEvent(libraryEvent);
+		// SendResult<Integer, String> sendResult =
+		// libraryEventProducer.sendLibraryEventSynchronous(libraryEvent);
+		// log.info("send result is {}", sendResult.toString());
 		libraryEventProducer.sendLibraryEvent_Approach2(libraryEvent);
-		log.info("after sendLibraryEvent");
 		return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
 	}
-	
-	@PutMapping("/v1/libraryevent")
-	public ResponseEntity<LibraryEvent> putLibraryEvent(@RequestBody LibraryEvent libraryEvent) throws JsonProcessingException {
 
-		log.info("before sendLibraryEvent");
+	@PutMapping("/v1/libraryevent")
+	public ResponseEntity<?> putLibraryEvent(@RequestBody LibraryEvent libraryEvent) throws JsonProcessingException {
+
+		if (Objects.isNull(libraryEvent.getLibraryEventId())) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please pass the libraryEventId in the request");
+		}
 		libraryEvent.setLibraryEventType(LibraryEventType.UPDATE);
 		libraryEventProducer.sendLibraryEvent(libraryEvent);
-		log.info("after sendLibraryEvent");
 		return ResponseEntity.status(HttpStatus.OK).body(libraryEvent);
 	}
 }
